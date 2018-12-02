@@ -1,24 +1,16 @@
-use std::collections::HashMap;
-use std::process::exit;
+use std::collections::HashSet;
 
 fn main() {
     let input = include_str!("input.txt");
-
     let mut sum = 0;
-    let mut map = HashMap::new();
+    let mut map = HashSet::new();
+    map.insert(0);
 
-    map.insert(0, true);
-
-    while true{
-        for s in input.lines() { 
-            let s: i32 = s.parse().unwrap();
-            sum += s;
-            if map.insert(sum, true) != None {
-                println!("{}", sum);
-                exit(0);
-            }
+    for s in input.lines().cycle() { 
+        sum += s.parse::<i32>().unwrap();
+        if !map.insert(sum) {
+            break;
         }
     }
-
     println!("{}", sum);
 }
