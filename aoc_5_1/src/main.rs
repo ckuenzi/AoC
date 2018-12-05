@@ -2,6 +2,9 @@ fn main() {
     println!(
         "{}",
         include_str!("input.txt")
+            .lines()
+            .next()
+            .unwrap()
             .chars()
             .fold(vec![], |mut acc, c| {
                 if let Some(&last) = acc.last() {
@@ -14,6 +17,5 @@ fn main() {
                 acc
             })
             .len()
-            - 1
     );
 }
