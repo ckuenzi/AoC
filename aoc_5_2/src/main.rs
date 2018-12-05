@@ -7,10 +7,10 @@ fn main() {
                 input
                     .clone()
                     .chars()
-                    .filter(|&x| x as u8 != c && x as u8 != c - 32)
+                    .filter(|&x| x as u8 | 0x20 != c)
                     .fold(vec![], |mut acc, c| {
                         if let Some(&last) = acc.last() {
-                            if c as u8 ^ 32 == last as u8 {
+                            if c as u8 ^ 0x20 == last as u8 {
                                 acc.pop();
                                 return acc;
                             }
