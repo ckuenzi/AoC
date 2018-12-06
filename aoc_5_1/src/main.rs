@@ -1,7 +1,7 @@
 fn main() {
     println!(
         "{}",
-        include_str!("input.txt")
+        include_str!("biginput")
             .lines()
             .next()
             .unwrap()
