@@ -7,9 +7,9 @@ fn main() {
     println!("{:?}", parse(iter));
 }
 
-fn parse<'a, I>(iter: &mut I) -> i32
+fn parse<'a, T>(iter: &mut T) -> i32
 where
-    I: Iterator<Item = &'a i32>,
+    T: Iterator<Item = &'a i32>,
 {
     let (children, data) = (iter.next().unwrap(), iter.next().unwrap());
     (0..*children).into_iter().map(|_| parse(iter)).sum::<i32>()
