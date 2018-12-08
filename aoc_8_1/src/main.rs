@@ -1,24 +1,17 @@
 fn main() {
-    let input = &mut include_str!("input.txt")
-        .replace('\n', "")
-        .split(' ')
-        .filter_map(|x| x.parse::<i32>().ok())
+    let input = include_str!("test.txt")
+        .split_whitespace()
+        .filter_map(|x| x.parse().ok())
         .collect::<Vec<_>>();
-    println!("{:?}", parse(input));
+    let iter = &mut input.iter();
+    println!("{:?}", parse(iter));
 }
 
-fn parse(input: &mut std::vec::Vec<i32>) -> i32 {
-    let mut sum = 0;
-    if input.len() == 0 {
-        return sum;
-    }
-    let children = input.remove(0);
-    let data = input.remove(0);
-    for _ in 0..children {
-        sum += parse(input);
-    }
-    for _ in 0..data {
-        sum += input.remove(0);
-    }
-    sum
+fn parse<'a, I>(iter: &mut I) -> i32
+where
+    I: Iterator<Item = &'a i32>,
+{
+    let (children, data) = (iter.next().unwrap(), iter.next().unwrap());
+    (0..*children).into_iter().map(|_| parse(iter)).sum::<i32>()
+        + iter.take(*data as usize).sum::<i32>()
 }
