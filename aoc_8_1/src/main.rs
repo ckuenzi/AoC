@@ -3,8 +3,7 @@ fn main() {
         .replace('\n', "")
         .split(' ')
         .filter_map(|x| x.parse::<i32>().ok())
-        .collect::<Vec<i32>>();
-    ;
+        .collect::<Vec<_>>();
     println!("{:?}", parse(input));
 }
 
