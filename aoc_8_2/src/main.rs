@@ -1,8 +1,7 @@
 fn main() {
     let input = &mut include_str!("input.txt")
-        .replace('\n', "")
-        .split(' ')
-        .filter_map(|x| x.parse::<i32>().ok())
+        .split_whitespace()
+        .filter_map(|x| x.parse().ok())
         .collect::<Vec<_>>();
 
     println!("{:?}", parse(input));

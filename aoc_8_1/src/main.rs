@@ -3,8 +3,7 @@ fn main() {
         .split_whitespace()
         .filter_map(|x| x.parse().ok())
         .collect::<Vec<i32>>();
-    let iter = &mut input.iter();
-    println!("{:?}", parse(iter));
+    println!("{}", parse(&mut input.iter()));
 }
 
 fn parse<'a, T>(iter: &mut T) -> i32
