@@ -6,16 +6,7 @@ fn main() {
                 .split(|c| c == '<' || c == ',' || c == '>' || c == ' ')
                 .filter_map(|s| s.parse::<i64>().ok())
                 .collect::<Vec<_>>();
-            Star {
-                position: Vec2 {
-                    x: nums[0],
-                    y: nums[1],
-                },
-                velocity: Vec2 {
-                    x: nums[2],
-                    y: nums[3],
-                },
-            }
+            Star::new(nums[0], nums[1], nums[2], nums[3])
         })
         .collect::<Vec<_>>();
     let mut seconds = 0;
@@ -25,6 +16,8 @@ fn main() {
     let mut end = Vec2 { x: 0, y: 0 };
     while area < area_last {
         area_last = area;
+        stars.iter_mut().for_each(|star| star.forward(1));
+
         start = Vec2 {
             x: stars.iter().map(|star| star.position.x).min().unwrap(),
             y: stars.iter().map(|star| star.position.y).min().unwrap(),
@@ -35,22 +28,23 @@ fn main() {
         };
 
         area = (end.x - start.x) * (end.y - start.y);
-        stars.iter_mut().for_each(|star| star.forward(1));
         seconds += 1;
     }
-    stars.iter_mut().for_each(|star| star.forward(-2));
-    seconds -= 2;
+    stars.iter_mut().for_each(|star| star.forward(-1));
+    seconds -= 1;
 
-    for y in start.y..=end.y {
-        for x in start.x..=end.x {
-            if stars
-                .iter()
-                .any(|star| star.position.x == x && star.position.y == y)
-            {
-                print!("{}", '#');
-            } else {
-                print!("{}", ' ');
-            }
+    for y in start.y..end.y {
+        for x in start.x..end.x {
+            print!(
+                "{}",
+                match stars
+                    .iter()
+                    .any(|star| star.position.x == x && star.position.y == y)
+                {
+                    true => '#',
+                    false => ' ',
+                }
+            );
         }
         println!()
     }
@@ -71,5 +65,12 @@ impl Star {
     fn forward(&mut self, steps: i64) {
         self.position.x += steps * self.velocity.x;
         self.position.y += steps * self.velocity.y;
+    }
+
+    fn new(x: i64, y: i64, vx: i64, vy: i64) -> Star {
+        return Star {
+            position: Vec2 { x: x, y: y },
+            velocity: Vec2 { x: vx, y: vy },
+        };
     }
 }
