@@ -9,9 +9,16 @@ fn main() {
 
     for _ in 0..input + 10 {
         score = board[elfo] + board[twinkels];
+
+        let mut digits = vec![];
         if score >= 10 {
-            board.push(score / 10);
+            digits.push(score / 10);
             score %= 10;
+        }
+        digits.push(score);
+
+        for digit in digits {
+            board.push(digit);
             if board.len() > input {
                 print_count -= 1;
                 print!("{}", board[board.len() - 1]);
@@ -20,7 +27,7 @@ fn main() {
                 }
             }
         }
-        board.push(score);
+
         if board.len() > input {
             print_count -= 1;
             print!("{}", board[board.len() - 1]);

@@ -9,20 +9,22 @@ fn main() {
     let mut twinkels = 1;
     let mut current_score = 37;
 
-    loop {
+    'outer: loop {
         let mut score = board[elfo] + board[twinkels];
+
+        let mut digits = vec![];
         if score >= 10 {
-            board.push(score / 10);
+            digits.push(score / 10);
             score %= 10;
+        }
+        digits.push(score);
+
+        for digit in digits {
+            board.push(digit);
             current_score = ((current_score * 10) % digit_mod) + board[board.len() - 1];
             if current_score == input {
-                break;
+                break 'outer;
             }
-        }
-        board.push(score);
-        current_score = ((current_score * 10) % digit_mod) + board[board.len() - 1];
-        if current_score == input {
-            break;
         }
 
         elfo = (elfo + board[elfo] + 1) % board.len();
