@@ -53,9 +53,7 @@ fn main() {
             out
         });
 
-        if let Some(_) = input.next() {
-            continue;
-        } else {
+        if input.next().is_none() {
             break;
         }
     }
