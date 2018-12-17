@@ -24,14 +24,16 @@ fn main() {
         tests.push(opcodes.to_vec());
     }
 
-    let mut input = include_str!("input.txt").lines();
+    let mut input_big = include_str!("input.txt").split("\n\n\n\n");
+    let mut input = input_big.next().unwrap().lines();
+    let input2 = input_big.next().unwrap().lines();
 
     let mut result = 0;
     loop {
         let before = parse(input.next().unwrap());
         let instruction = parse(input.next().unwrap());
         let after = parse(input.next().unwrap());
-        input.next();
+
         let mut count = 0;
         let mut possible_opcodes = vec![];
         for opcode in opcodes.to_vec().iter() {
@@ -44,30 +46,30 @@ fn main() {
             result += 1;
         }
 
-        if result == 607 {
-            break;
-        }
         tests[instruction[0]] = tests[instruction[0]].iter().fold(vec![], |mut out, o| {
             if possible_opcodes.contains(o) {
                 out.push(*o);
             }
             out
-        })
+        });
+
+        if let Some(_) = input.next() {
+            continue;
+        } else {
+            break;
+        }
     }
-    input.next();
-    input.next();
 
     println!("Number of codes > 3: {}", result);
     println!("{:?}", tests);
 
-    let mut reg = [0, 0, 0, 0];
-
-    reg = input.fold(reg, |reg, line| {
-        let instruction = parse(line);
-        execute(opcodes[instruction[0]], &instruction, &reg)
-    });
-
-    println!("Register values {:?} ", reg);
+    println!(
+        "Register values {:?} ",
+        input2.fold([0, 0, 0, 0], |reg, line| {
+            let instruction = parse(line);
+            execute(opcodes[instruction[0]], &instruction, &reg)
+        })
+    );
 }
 
 fn parse(input: &str) -> [usize; 4] {
@@ -122,6 +124,7 @@ fn execute(opcode: Opcode, instruction: &[usize; 4], reg: &[usize; 4]) -> [usize
     };
     out
 }
+
 #[derive(Copy, Clone, PartialEq, Debug)]
 #[allow(non_camel_case_types)]
 enum Opcode {
