@@ -51,7 +51,7 @@ fn main() {
                 out.push(*o);
             }
             out
-        });
+        });cd .
 
         if input.next().is_none() {
             break;
