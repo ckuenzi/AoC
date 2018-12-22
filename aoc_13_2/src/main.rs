@@ -16,7 +16,7 @@ fn main() {
     let mut carts = vec![];
     let mut ids = 0;
 
-    include_str!("input.txt").lines().enumerate().for_each(|y| {
+    include_str!("inputs.txt").lines().enumerate().for_each(|y| {
         y.1.chars().enumerate().for_each(|x| match x.1 {
             ' ' => (),
             '-' => map[y.0][x.0].rail_type = Some(Type::Horizontal),
@@ -90,10 +90,11 @@ fn main() {
     }
 
     let n_carts = carts.len();
-
+    let mut count = 0;
     'outer: loop {
         let mut copy: Vec<(usize, usize, i32)> = vec![];
         let mut to_remove: Vec<i32> = vec![];
+        count += 1;
 
         for cart in carts.iter() {
             if !cart.removed {
@@ -164,7 +165,7 @@ fn main() {
                     to_remove.push(cart.id);
                     to_remove.push(other.2);
                     cart.removed = true;
-                    println!("Collision at {},{}", cart.pos.x, cart.pos.y);
+                    println!("Collision at {},{} with ID {} and {} at count {}", cart.pos.x, cart.pos.y, cart.id, other.2,count);
                     carts_left -= 2;
                 }
 
