@@ -1,0 +1,7 @@
+[package]
+name = "aoc_13_2"
+version = "0.1.0"
+authors = ["ckuenzi <ckuenzi@student.ehtz.ch>"]
+edition = "2018"
+
+[dependencies]
