@@ -1,6 +1,0 @@
-[package]
-name = "aoc_15_1"
-version = "0.1.0"
-authors = ["ckuenzi <ckuenzi@student.ethz.ch>"]
-
-[dependencies]
