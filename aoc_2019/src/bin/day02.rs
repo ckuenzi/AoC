@@ -33,7 +33,7 @@ fn task2() {
         }
     }
 }
-
+#[allow(non_snake_case)]
 fn run_program(memory: &mut Vec<usize>) {
     let mut IP = 0;
     loop {
