@@ -1,74 +1,49 @@
+use itertools::Itertools;
+use petgraph::algo::dijkstra;
+use petgraph::graph::NodeIndex;
+use petgraph::Graph;
+use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
+use std::hash::{Hash, Hasher};
 
 fn main() {
-    let mut orbits = HashMap::<String, Orbit>::new();
-    include_str!("inputs\\day06a.txt")
-        .lines()
-        .map(|s| s.split(')').collect::<Vec<_>>())
-        .for_each(|a| {
-            orbits
-                .entry(a[0].to_string())
-                .or_insert(Orbit::new())
-                .satellites
-                .push(a[1].to_string());
-            orbits.entry(a[1].to_string()).or_insert(Orbit::new());
-        });
-    println!("{}", count_orbits(&mut orbits, "COM".to_string()));
+    let (system, nodes) = parse_input();
+    let from_com = dijkstra(&system, *nodes.get("COM").unwrap(), None, |_| 1);
+    let weights = from_com.iter().map(|n| n.1);
+    let mut part1 = 0;
+    for weight in weights {
+        part1 += weight;
+    }
+
     println!(
-        "{}",
-        find_path(&mut orbits, "YOU".to_string(), "SAN".to_string()) - 3
+        "{}\n{}",
+        part1,
+        dijkstra(&system, *nodes.get("YOU").unwrap(), None, |_| 1)
+            .get(nodes.get("SAN").unwrap())
+            .unwrap()
+            - 2
     );
 }
 
-fn find_path(system: &mut HashMap<String, Orbit>, from: String, to: String) -> u32 {
-    if from == to {
-        return 1;
+fn parse_input() -> (Graph<u32, u32>, HashMap<String, NodeIndex>) {
+    let mut system = Graph::new();
+    let inputs = include_str!("inputs\\day06a.txt")
+        .lines()
+        .map(|l| l.split(')').collect::<Vec<_>>());
+
+    let mut nodes = HashMap::<String, NodeIndex>::new();
+    for n in inputs.clone().flatten().unique() {
+        nodes.insert(n.to_string(), system.add_node(hash_str(n)));
     }
-    let mut current = system.get_mut(&from).unwrap();
-    current.visited = true;
-    let mut targets = current.satellites.clone();
-    targets.push(current.parent.clone());
-    for target in targets {
-        let next = system.get_mut(&target).unwrap();
-        if next.visited {
-            continue;
-        }
-        let res = find_path(system, target, to.clone());
-        if res > 0 {
-            return res + 1;
-        }
+    for e in inputs {
+        system.add_edge(*nodes.get(e[0]).unwrap(), *nodes.get(e[1]).unwrap(), 1);
+        system.add_edge(*nodes.get(e[1]).unwrap(), *nodes.get(e[0]).unwrap(), 1);
     }
-    0
+    (system, nodes)
 }
 
-fn count_orbits(system: &mut HashMap<String, Orbit>, origin: String) -> u32 {
-    let current_orbit_count = system.get(&origin).unwrap().orbit_count;
-    let satellites = system.get(&origin).unwrap().satellites.clone();
-
-    let mut total = current_orbit_count;
-    for satellite in satellites {
-        system.get_mut(&satellite).unwrap().orbit_count = current_orbit_count + 1;
-        system.get_mut(&satellite).unwrap().parent = origin.clone();
-        total += count_orbits(system, satellite);
-    }
-    total
-}
-
-#[derive(Debug, Clone)]
-struct Orbit {
-    orbit_count: u32,
-    visited: bool,
-    parent: String,
-    satellites: Vec<String>,
-}
-
-impl Orbit {
-    fn new() -> Orbit {
-        Orbit {
-            orbit_count: 0,
-            satellites: vec![],
-            parent: "".to_string(),
-            visited: false,
-        }
-    }
+fn hash_str(input: &str) -> u32 {
+    let mut s = DefaultHasher::new();
+    input.hash(&mut s);
+    s.finish() as u32
 }
