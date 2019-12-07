@@ -13,9 +13,9 @@ pub struct Computer {
 }
 
 impl Computer {
-    pub fn new(program: Vec<i32>, in_id: i32) -> Computer {
+    pub fn new(program: Vec<i32>) -> Computer {
         Computer {
-            id: in_id,
+            id: 0,
             memory: program.clone(),
             original_memory: program,
             ip: 0,
@@ -103,18 +103,19 @@ impl Computer {
     }
 
     #[allow(dead_code)]
-    pub fn run_all(&mut self) {
-        while !self.halted {
+    pub fn run(&mut self) {
+        self.waiting_for_input = false;
+        while !self.halted && !self.waiting_for_input {
             self.step();
         }
     }
 
     #[allow(dead_code)]
-    pub fn run_till_input(&mut self) {
-        self.waiting_for_input = false;
-        while !self.halted && !self.waiting_for_input {
-            self.step();
-        }
+    pub fn siso(&mut self, input: i32) -> i32 {
+        self.add_input(input);
+        self.run();
+        self.get_output()
+            .unwrap_or_else(|| panic!("SISO no output available"))
     }
 
     #[allow(dead_code)]
