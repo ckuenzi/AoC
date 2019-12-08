@@ -26,6 +26,11 @@ impl Computer {
         }
     }
 
+    pub fn new_from_text(input: &str) -> Computer {
+        let memory = read_intscript_from_file(input);
+        Computer::new(memory)
+    }
+
     pub fn step(&mut self) {
         let mut p1 = self.ip + 1;
         let mut p2 = self.ip + 2;
@@ -95,11 +100,12 @@ impl Computer {
     }
 
     #[allow(dead_code)]
-    pub fn run(&mut self) {
+    pub fn run(&mut self) -> &mut Computer {
         self.waiting_for_input = false;
         while !self.halted && !self.waiting_for_input {
             self.step();
         }
+        self
     }
 
     #[allow(dead_code)]
@@ -111,23 +117,26 @@ impl Computer {
     }
 
     #[allow(dead_code)]
-    pub fn reset(&mut self) {
+    pub fn reset(&mut self) -> &mut Computer {
         self.memory = self.original_memory.clone();
         self.ip = 0;
         self.input = VecDeque::new();
         self.output = VecDeque::new();
         self.halted = false;
         self.waiting_for_input = false;
+        self
     }
 
     #[allow(dead_code)]
-    pub fn add_inputs(&mut self, input: Vec<i32>) {
+    pub fn add_inputs(&mut self, input: Vec<i32>) -> &mut Computer {
         self.input.append(&mut VecDeque::from(input));
+        self
     }
 
     #[allow(dead_code)]
-    pub fn add_input(&mut self, input: i32) {
+    pub fn add_input(&mut self, input: i32) -> &mut Computer {
         self.input.push_back(input);
+        self
     }
 
     #[allow(dead_code)]
@@ -141,8 +150,9 @@ impl Computer {
     }
 
     #[allow(dead_code)]
-    pub fn write_memory(&mut self, address: usize, value: i32) {
+    pub fn write_memory(&mut self, address: usize, value: i32) -> &mut Computer {
         self.memory[address] = value;
+        self
     }
 
     #[allow(dead_code)]
