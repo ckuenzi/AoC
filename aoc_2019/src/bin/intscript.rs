@@ -80,19 +80,11 @@ impl Computer {
                 }
             }
             7 => {
-                self.memory[pt] = if self.memory[p1] < self.memory[p2] {
-                    1
-                } else {
-                    0
-                };
+                self.memory[pt] = (self.memory[p1] < self.memory[p2]) as i32;
                 self.ip += 4;
             }
             8 => {
-                self.memory[pt] = if self.memory[p1] == self.memory[p2] {
-                    1
-                } else {
-                    0
-                };
+                self.memory[pt] = (self.memory[p1] == self.memory[p2]) as i32;
                 self.ip += 4;
             }
             99 => {
@@ -146,6 +138,16 @@ impl Computer {
     #[allow(dead_code)]
     pub fn get_outputs(&mut self) -> VecDeque<i32> {
         self.output.clone()
+    }
+
+    #[allow(dead_code)]
+    pub fn write_memory(&mut self, address: usize, value: i32) {
+        self.memory[address] = value;
+    }
+
+    #[allow(dead_code)]
+    pub fn read_memory(&mut self, address: usize) -> i32 {
+        self.memory[address]
     }
 
     fn wrap_pointer(&self, p: &mut usize) {
