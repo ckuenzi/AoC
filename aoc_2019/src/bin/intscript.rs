@@ -26,6 +26,7 @@ impl Computer {
         }
     }
 
+    #[allow(dead_code)]
     pub fn new_from_text(input: &str) -> Computer {
         let memory = read_intscript_from_file(input);
         Computer::new(memory)
