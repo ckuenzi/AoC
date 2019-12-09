@@ -3,7 +3,8 @@ use itertools::Itertools;
 const LOWER: u32 = 240920;
 const UPPER: u32 = 789857;
 
-fn main() {
+#[aoc(day4, part2)]
+fn part12(_: &str) -> String{
     let mut total_part1 = 0;
     let mut total_part2 = 0;
     for pin in LOWER..UPPER {
@@ -20,7 +21,7 @@ fn main() {
         total_part1 += (doubles >= 1) as usize;
         total_part2 += (doubles > triples) as usize;
     }
-    println!("{:?}", (total_part1, total_part2));
+    format!("{:?}", (total_part1, total_part2))
 }
 
 fn num_to_digits(mut num: u32) -> Vec<u8> {

@@ -14,6 +14,7 @@ pub struct Computer {
     waiting_for_input: bool,
 }
 
+
 impl Computer {
     pub fn new(program: Vec<i64>) -> Computer {
         Computer {

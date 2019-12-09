@@ -1,11 +1,8 @@
 use std::cmp;
 use std::collections::HashMap;
 
-fn main() {
-    part12(include_str!("inputs\\day03a.txt"));
-}
-
-fn part12(input: &str) -> (i32, u32) {
+#[aoc(day3, part2)]
+fn part12(input: &str) -> String {
     let lines = input
         .lines()
         .map(|line| {
@@ -72,8 +69,7 @@ fn part12(input: &str) -> (i32, u32) {
         .min_by(|a, b| (a.1.rsteps + a.1.lsteps).cmp(&(b.1.rsteps + b.1.lsteps)))
         .map(|a| a.1.rsteps + a.1.lsteps)
         .unwrap();
-    println!("{} \n{}", closest, shortest);
-    (closest, shortest)
+    format!("{}\n{}", closest, shortest)
 }
 
 #[derive(Clone, Hash, Eq, PartialEq, Debug, Copy)]
@@ -95,16 +91,4 @@ impl Coord {
     fn norm(&self) -> i32 {
         self.x.abs() + self.y.abs()
     }
-}
-
-#[test]
-fn both_parts() {
-    assert_eq!(
-        part12("R75,D30,R83,U83,L12,D49,R71,U7,L72\nU62,R66,U55,R34,D71,R55,D58,R83"),
-        (159, 610)
-    );
-    assert_eq!(
-        part12("R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51\nU98,R91,D20,R16,D67,R40,U7,R15,U6,R7"),
-        (135, 410)
-    );
 }

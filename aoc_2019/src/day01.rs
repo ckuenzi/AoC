@@ -1,26 +1,16 @@
-pub fn main() {
-    part1();
-    part2();
+#[aoc_generator(day1)]
+fn input_generator(input: &str) -> Vec<i32> {
+    input.lines().map(|x| x.parse::<i32>().unwrap()).collect()
 }
 
-fn part1() {
-    println!(
-        "{}",
-        include_str!("inputs\\day01a.txt")
-            .lines()
-            .map(|x| calculate_fuel(x.parse::<i32>().unwrap()))
-            .sum::<i32>()
-    );
+#[aoc(day1, part1)]
+fn part1(input: &Vec<i32>) -> i32 {
+    input.iter().map(|&x| calculate_fuel(x)).sum::<i32>()
 }
 
-fn part2() {
-    println!(
-        "{}",
-        include_str!("inputs\\day01a.txt")
-            .lines()
-            .map(|x| rocket_equation(x.parse::<i32>().unwrap()))
-            .sum::<i32>()
-    );
+#[aoc(day1, part2)]
+fn part2(input: &Vec<i32>) -> i32 {
+    input.iter().map(|&x| rocket_equation(x)).sum::<i32>()
 }
 
 fn calculate_fuel(mass: i32) -> i32 {

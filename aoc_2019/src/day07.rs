@@ -1,20 +1,24 @@
-mod intscript;
+use super::intscript::Computer;
 use itertools::Itertools;
 use std::cmp;
 
-fn main() {
-    let mut computers =
-        vec![intscript::Computer::new_from_text(include_str!("inputs\\day07a.txt")); 5];
-
-    let mut part1 = 0;
+#[aoc(day7, part1)]
+fn part1(input: &str) -> i64 {
+    let mut computers = vec![Computer::new_from_text(input); 5];
+    let mut res = 0;
     for phases in (0..5).permutations(5) {
         let mut carry = 0;
         for (i, computer) in computers.iter_mut().enumerate() {
             carry = computer.reset().add_input(phases[i]).siso(carry);
         }
-        part1 = cmp::max(part1, carry);
+        res = cmp::max(res, carry)
     }
+    res
+}
 
+#[aoc(day7, part2)]
+fn part2(input: &str) -> i64 {
+    let mut computers = vec![Computer::new_from_text(input); 5];
     let mut part2 = 0;
     for phases in (5..10).permutations(5) {
         let mut carry = 0;
@@ -31,5 +35,5 @@ fn main() {
             computer.reset();
         }
     }
-    println!("{}\n{}", part1, part2);
+    part2
 }
