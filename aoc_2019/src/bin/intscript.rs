@@ -1,24 +1,28 @@
-use std::collections::VecDeque;
+use std::collections::{HashMap, VecDeque};
 
 #[derive(Clone)]
 pub struct Computer {
-    pub id: i32,
-    memory: Vec<i32>,
-    original_memory: Vec<i32>,
+    pub id: i64,
+    memory: Vec<i64>,
+    extra_memory: HashMap<usize, i64>,
+    original_memory: Vec<i64>,
     ip: usize,
-    input: VecDeque<i32>,
-    output: VecDeque<i32>,
+    relative_base: i64,
+    input: VecDeque<i64>,
+    output: VecDeque<i64>,
     pub halted: bool,
     waiting_for_input: bool,
 }
 
 impl Computer {
-    pub fn new(program: Vec<i32>) -> Computer {
+    pub fn new(program: Vec<i64>) -> Computer {
         Computer {
             id: 0,
             memory: program.clone(),
             original_memory: program,
+            extra_memory: HashMap::new(),
             ip: 0,
+            relative_base: 0,
             input: VecDeque::new(),
             output: VecDeque::new(),
             halted: false,
@@ -32,66 +36,74 @@ impl Computer {
         Computer::new(memory)
     }
 
+    fn get_pointers(&mut self, offset: i64) -> usize {
+        let p = self.ip + offset as usize;
+        let instruction = self.read(self.ip);
+        match (instruction % (10_i64.pow(offset as u32) * 100)) / (10_i64.pow(offset as u32) * 10) {
+            0 => self.read(p) as usize,
+            1 => p,
+            2 => (self.read(p) + self.relative_base)  as usize,
+            _ => panic!("{} unknown mode", instruction),
+        }
+    }
+
     pub fn step(&mut self) {
-        let mut p1 = self.ip + 1;
-        let mut p2 = self.ip + 2;
-        let mut pt = self.ip + 3;
-        self.wrap_pointer(&mut p1);
-        self.wrap_pointer(&mut p2);
-        self.wrap_pointer(&mut pt);
-        let instruction = self.memory[self.ip];
-        if (instruction % 1000) / 100 == 0 {
-            p1 = self.memory[p1] as usize;
-        }
-        if (instruction % 10000) / 1000 == 0 {
-            p2 = self.memory[p2] as usize;
-        }
-        if (instruction % 100_000) / 10000 == 0 {
-            pt = self.memory[pt] as usize;
-        }
+        let instruction = self.read(self.ip);
+        let p1 = self.get_pointers(1);
+        let p2 = self.get_pointers(2);
+        let pt = self.get_pointers(3);
         match instruction % 100 {
             1 => {
-                self.memory[pt] = self.memory[p1] + self.memory[p2];
+                let res = self.read(p1) + self.read(p2);
+                self.write(pt, res);
                 self.ip += 4;
             }
             2 => {
-                self.memory[pt] = self.memory[p1] * self.memory[p2];
+                let res = self.read(p1) * self.read(p2);
+                self.write(pt, res);
                 self.ip += 4;
             }
             3 => {
                 if let Some(next_input) = self.input.pop_front() {
-                    self.memory[p1] = next_input;
+                    self.write(p1, next_input);
                     self.ip += 2;
                 } else {
                     self.waiting_for_input = true;
                 }
             }
             4 => {
-                //println!("{}", self.memory[p1]);
-                self.output.push_back(self.memory[p1]);
+                //println!("{}", self.read(p1));
+                let out = self.read(p1);
+                self.output.push_back(out);
                 self.ip += 2;
             }
             5 => {
-                if self.memory[p1] != 0 {
-                    self.ip = self.memory[p2] as usize;
+                if self.read(p1) != 0 {
+                    self.ip = self.read(p2) as usize;
                 } else {
                     self.ip += 3;
                 }
             }
             6 => {
-                if self.memory[p1] == 0 {
-                    self.ip = self.memory[p2] as usize;
+                if self.read(p1) == 0 {
+                    self.ip = self.read(p2) as usize;
                 } else {
                     self.ip += 3;
                 }
             }
             7 => {
-                self.memory[pt] = (self.memory[p1] < self.memory[p2]) as i32;
+                let res = (self.read(p1) < self.read(p2)) as i64;
+                self.write(pt, res);
                 self.ip += 4;
             }
             8 => {
-                self.memory[pt] = (self.memory[p1] == self.memory[p2]) as i32;
+                let res = (self.read(p1) == self.read(p2)) as i64;
+                self.write(pt, res);
                 self.ip += 4;
+            }
+            9 => {
+                self.relative_base += self.read(p1);
+                self.ip += 2;
             }
             99 => {
                 self.halted = true;
@@ -110,7 +122,7 @@ impl Computer {
     }
 
     #[allow(dead_code)]
-    pub fn siso(&mut self, input: i32) -> i32 {
+    pub fn siso(&mut self, input: i64) -> i64 {
         self.add_input(input);
         self.run();
         self.get_output()
@@ -120,7 +132,9 @@ impl Computer {
     #[allow(dead_code)]
     pub fn reset(&mut self) -> &mut Computer {
         self.memory = self.original_memory.clone();
+        self.extra_memory = HashMap::new();
         self.ip = 0;
+        self.relative_base = 0;
         self.input = VecDeque::new();
         self.output = VecDeque::new();
         self.halted = false;
@@ -129,45 +143,44 @@ impl Computer {
     }
 
     #[allow(dead_code)]
-    pub fn add_inputs(&mut self, input: Vec<i32>) -> &mut Computer {
+    pub fn add_inputs(&mut self, input: Vec<i64>) -> &mut Computer {
         self.input.append(&mut VecDeque::from(input));
         self
     }
 
     #[allow(dead_code)]
-    pub fn add_input(&mut self, input: i32) -> &mut Computer {
+    pub fn add_input(&mut self, input: i64) -> &mut Computer {
         self.input.push_back(input);
         self
     }
 
     #[allow(dead_code)]
-    pub fn get_output(&mut self) -> Option<i32> {
+    pub fn get_output(&mut self) -> Option<i64> {
         self.output.pop_front()
     }
 
     #[allow(dead_code)]
-    pub fn get_outputs(&mut self) -> VecDeque<i32> {
+    pub fn get_outputs(&mut self) -> VecDeque<i64> {
         self.output.clone()
     }
 
-    #[allow(dead_code)]
-    pub fn write_memory(&mut self, address: usize, value: i32) -> &mut Computer {
-        self.memory[address] = value;
+    pub fn write(&mut self, address: usize, value: i64) -> &mut Computer {
+        if address < self.memory.len() {
+            self.memory[address] = value;
+        } else {
+            *self.extra_memory.entry(address).or_insert(value) = value;
+        }
         self
     }
 
-    #[allow(dead_code)]
-    pub fn read_memory(&mut self, address: usize) -> i32 {
-        self.memory[address]
-    }
-
-    fn wrap_pointer(&self, p: &mut usize) {
-        if p >= &mut self.memory.len() {
-            *p = p.wrapping_sub(self.memory.len());
+    pub fn read(&mut self, address: usize) -> i64 {
+        match address < self.memory.len() {
+            true => self.memory[address],
+            false => *self.extra_memory.entry(address).or_insert(0),
         }
     }
 }
 
-pub fn read_intscript_from_file(file: &str) -> Vec<i32> {
-    file.split(',').map(|x| x.parse::<i32>().unwrap()).collect()
+pub fn read_intscript_from_file(file: &str) -> Vec<i64> {
+    file.split(',').map(|x| x.parse::<i64>().unwrap()).collect()
 }
