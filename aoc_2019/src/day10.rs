@@ -16,7 +16,7 @@ fn gen(input: &str) -> Vec<Coord> {
     asteroids
 }
 
-#[aoc(day10, part1)]
+#[aoc(day10, part1, part2)]
 fn part2(map: &Vec<Coord>) -> String {
     let mut max = 0;
     let mut base = Coord::new(0, 0);

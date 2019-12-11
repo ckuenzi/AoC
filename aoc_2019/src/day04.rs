@@ -3,8 +3,8 @@ use itertools::Itertools;
 const LOWER: u32 = 240920;
 const UPPER: u32 = 789857;
 
-#[aoc(day4, part2)]
-fn part12(_: &str) -> String{
+#[aoc(day4, part1, part2)]
+fn part12(_: &str) -> String {
     let mut total_part1 = 0;
     let mut total_part2 = 0;
     for pin in LOWER..UPPER {

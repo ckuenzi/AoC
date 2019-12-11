@@ -1,7 +1,7 @@
 use std::cmp;
 use std::collections::HashMap;
 
-#[aoc(day3, part2)]
+#[aoc(day3, part1, part2)]
 fn part12(input: &str) -> String {
     let lines = input
         .lines()
