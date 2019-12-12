@@ -1,7 +1,7 @@
 [package]
 name = "aoc_2019"
 version = "0.1.0"
-authors = ["g3tha"]
+authors = ["ckuenzi"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -13,3 +13,5 @@ permutohedron = "0.2.4"
 criterion = "0.3"
 aoc-runner = "0.2.2"
 aoc-runner-derive = "0.2.2"
+num = "0.2.0"
+hashbrown = "0.6.3"
