@@ -1,6 +1,5 @@
 use itertools::Itertools;
 use num::integer::lcm;
-use hashbrown::HashMap;
 
 #[aoc_generator(day12)]
 fn system_gen(input: &str) -> Vec<Moon> {
@@ -28,24 +27,30 @@ fn part1(moons: &Vec<Moon>) -> i32 {
 fn part2(moons: &Vec<Moon>) -> u64 {
     let dim = moons[0].pos.len();
     let mut moons = moons.to_vec();
+    let start_state = moons.clone();
     let mut periods = vec![0; dim];
     let mut counter = 0;
-
-    let mut past_states = vec![HashMap::<(Vec<i32>, Vec<i32>), u64>::new(); dim];
     while periods.contains(&0) {
-        let (pos, vel) = separate_axes(&mut moons);
+        counter += 1;
+        step(&mut moons);
+
         for d in 0..dim {
             if periods[d] != 0 {
                 continue;
             }
-            if past_states[d].contains_key(&(pos[d].to_vec(), vel[d].to_vec())) {
+            let mut eq = true;
+            for m in 0..moons.len() {
+                if moons[m].pos[d] != start_state[m].pos[d]
+                    || moons[m].vel[d] != start_state[m].vel[d]
+                {
+                    eq = false;
+                    break;
+                }
+            }
+            if eq {
                 periods[d] = counter;
-            } else {
-                past_states[d].insert((pos[d].to_vec(), vel[d].to_vec()), counter);
             }
         }
-        counter += 1;
-        step(&mut moons);
     }
     periods.iter().fold(1, |acc, p| lcm(acc, *p))
 }
@@ -64,19 +69,6 @@ fn step(moons: &mut Vec<Moon>) {
             .zip(moon.vel.iter())
             .for_each(|(p, v)| *p += v);
     }
-}
-
-fn separate_axes(moons: &mut Vec<Moon>) -> (Vec<Vec<i32>>, Vec<Vec<i32>>) {
-    let mut pos = vec![vec![0; moons.len()]; moons[0].pos.len()];
-    let mut vel = vec![vec![0; moons.len()]; moons[0].pos.len()];
-
-    for i in 0..moons.len() {
-        for d in 0..moons[0].pos.len() {
-            pos[d][i] = moons[i].pos[d];
-            vel[d][i] = moons[i].vel[d];
-        }
-    }
-    (pos, vel)
 }
 
 #[derive(Debug, Clone, Eq, Hash, PartialEq)]
