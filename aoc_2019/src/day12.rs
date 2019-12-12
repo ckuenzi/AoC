@@ -60,8 +60,8 @@ fn step(moons: &mut Vec<Moon>) {
             }
         }
     }
-    for moon in moons{
-        for d in 0..3{
+    for moon in moons {
+        for d in 0..3 {
             moon.pos[d] += moon.vel[d];
         }
     }
