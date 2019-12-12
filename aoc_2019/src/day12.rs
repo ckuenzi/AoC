@@ -1,4 +1,3 @@
-use itertools::Itertools;
 use num::integer::lcm;
 
 #[aoc_generator(day12)]
@@ -25,49 +24,46 @@ fn part1(moons: &Vec<Moon>) -> i32 {
 
 #[aoc(day12, part2)]
 fn part2(moons: &Vec<Moon>) -> u64 {
-    let dim = moons[0].pos.len();
     let mut moons = moons.to_vec();
     let start_state = moons.clone();
-    let mut periods = vec![0; dim];
+    let mut periods = vec![0; 3];
     let mut counter = 0;
     while periods.contains(&0) {
         counter += 1;
         step(&mut moons);
 
-        for d in 0..dim {
+        'outer: for d in 0..3 {
             if periods[d] != 0 {
                 continue;
             }
-            let mut eq = true;
             for m in 0..moons.len() {
-                if moons[m].pos[d] != start_state[m].pos[d]
-                    || moons[m].vel[d] != start_state[m].vel[d]
+                if moons[m].vel[d] != start_state[m].vel[d]
+                    || moons[m].pos[d] != start_state[m].pos[d]
                 {
-                    eq = false;
-                    break;
+                    continue 'outer;
                 }
             }
-            if eq {
-                periods[d] = counter;
-            }
+            periods[d] = counter;
         }
     }
     periods.iter().fold(1, |acc, p| lcm(acc, *p))
 }
 
 fn step(moons: &mut Vec<Moon>) {
-    for i in (0..moons.len()).permutations(2) {
-        let m1 = i[0];
-        let m2 = i[1];
-        for i in 0..moons[m1].vel.len() {
-            moons[m1].vel[i] += (moons[m2].pos[i] - moons[m1].pos[i]).signum();
+    for m1 in 0..moons.len() {
+        for m2 in 0..moons.len() {
+            if m1 == m2 {
+                continue;
+            }
+            for i in 0..3 {
+                moons[m1].vel[i] += (moons[m2].pos[i] - moons[m1].pos[i]).signum();
+            }
         }
     }
-    for moon in moons.iter_mut() {
-        moon.pos
-            .iter_mut()
-            .zip(moon.vel.iter())
-            .for_each(|(p, v)| *p += v);
+    for moon in moons{
+        for d in 0..3{
+            moon.pos[d] += moon.vel[d];
+        }
     }
 }
 
@@ -80,7 +76,7 @@ struct Moon {
 impl Moon {
     pub fn new(pos: Vec<i32>) -> Moon {
         Moon {
-            vel: vec![0; pos.len()],
+            vel: vec![0; 3],
             pos,
         }
     }
