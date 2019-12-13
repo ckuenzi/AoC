@@ -164,6 +164,12 @@ impl Computer {
     pub fn get_outputs(&mut self) -> VecDeque<i64> {
         self.output.clone()
     }
+    #[allow(dead_code)]
+    pub fn dump_outputs(&mut self) -> Vec<i64> {
+        let out = Vec::from(self.output.clone());
+        self.output.clear();
+        out
+    }
 
     pub fn write(&mut self, address: usize, value: i64) -> &mut Computer {
         if address < self.memory.len() {
