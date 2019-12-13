@@ -1,4 +1,5 @@
-use std::collections::{HashMap, VecDeque};
+use hashbrown::HashMap;
+use std::collections::VecDeque;
 
 #[derive(Clone)]
 pub struct Computer {
@@ -13,7 +14,6 @@ pub struct Computer {
     pub halted: bool,
     waiting_for_input: bool,
 }
-
 
 impl Computer {
     pub fn new(program: Vec<i64>) -> Computer {
@@ -43,7 +43,7 @@ impl Computer {
         match (instruction % (10_i64.pow(offset as u32) * 100)) / (10_i64.pow(offset as u32) * 10) {
             0 => self.read(p) as usize,
             1 => p,
-            2 => (self.read(p) + self.relative_base)  as usize,
+            2 => (self.read(p) + self.relative_base) as usize,
             _ => panic!("{} unknown mode", instruction),
         }
     }
