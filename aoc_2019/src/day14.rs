@@ -14,32 +14,35 @@ fn part2(input: &str) -> u64 {
     let mut upper = 1;
     while calc_ore(&mut graph, upper) < max {
         upper *= 2;
-        reset_graph(&mut graph);
     }
     let mut lower = upper / 2 + 1;
-    let mut middle = (lower + upper + 1) / 2;
+    let mut middle = 0;
     while upper - lower > 1 {
         middle = (upper + lower + 1) / 2;
-        reset_graph(&mut graph);
-        if calc_ore(&mut graph, middle) < max {
-            lower = middle;
-        } else {
-            upper = middle;
+        match calc_ore(&mut graph, middle) < max {
+            true => lower = middle,
+            false => upper = middle,
         }
     }
     middle
 }
 
+macro_rules! get_node {
+    ($n:expr, $g:ident) => {{
+        $g.get_mut(&$n).unwrap()
+    }};
+}
+
 fn calc_ore(graph: &mut HashMap<String, Node>, fuel: u64) -> u64 {
-    graph.get_mut(&"FUEL".to_string()).unwrap().used = fuel;
+    get_node!(*"FUEL", graph).used = fuel;
 
     let mut current = "FUEL".to_string();
     while !current.eq(&"ORE") {
-        graph.get_mut(&current).unwrap().visited = true;
-        for prev in graph.get(&current).unwrap().incoming.clone() {
-            graph.get_mut(&prev.0).unwrap().visits += 1;
-            let reactions = (graph.get_mut(&current).unwrap().used + 1) / prev.2;
-            graph.get_mut(&prev.0).unwrap().used += reactions * prev.1;
+        get_node!(current, graph).visited = true;
+        for prev in get_node!(current, graph).incoming.clone() {
+            get_node!(prev.0, graph).visits += 1;
+            let reactions = (get_node!(current, graph).used + 1) / prev.2;
+            get_node!(prev.0, graph).used += reactions * prev.1;
         }
         for (name, node) in graph.iter() {
             if node.children - node.visits == 0 && !node.visited {
@@ -48,19 +51,17 @@ fn calc_ore(graph: &mut HashMap<String, Node>, fuel: u64) -> u64 {
             }
         }
     }
-    graph.get("ORE").unwrap().used as u64
-}
-
-fn reset_graph(graph: &mut HashMap<String, Node>) {
+    let res = get_node!(*"ORE", graph).used;
     for node in graph.values_mut() {
         node.used = 0;
         node.visited = false;
         node.visits = 0;
     }
+    res
 }
 
 fn get_graph(input: &str) -> HashMap<String, Node> {
-    let mut nodes = HashMap::<String, _>::new();
+    let mut graph = HashMap::<String, _>::new();
     let mut parents = Vec::<String>::new();
     for line in input.lines() {
         let parts = line.split(|c| c == '=' || c == '>').collect::<Vec<_>>();
@@ -74,24 +75,23 @@ fn get_graph(input: &str) -> HashMap<String, Node> {
             let from = parts[1].to_string();
             let cost = parts[0].parse::<u64>().unwrap();
             parents.push(from.clone());
-            nodes
+            graph
                 .entry(to.clone())
                 .or_insert(Node::new())
                 .incoming
                 .push((from, cost, product));
         }
     }
-    nodes.insert("ORE".to_string(), Node::new());
+    graph.insert("ORE".to_string(), Node::new());
 
     for parent in parents {
-        nodes.get_mut(&parent).unwrap().children += 1;
+        get_node!(parent, graph).children += 1;
     }
-    nodes
+    graph
 }
 
 #[derive(Debug)]
 struct Node {
-    //(name, cost, product)
     incoming: Vec<(String, u64, u64)>,
     children: u64,
     visits: u64,
