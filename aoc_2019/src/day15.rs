@@ -23,7 +23,7 @@ fn part1(input: &str) -> String {
             {
                 continue;
             }
-            let tn = new_bot.add_input(dir.1).run().get_output().unwrap();
+            let tn = new_bot.siso(dir.1);
             maze.insert(
                 pn,
                 Node::new(pn, tn, maze.get(&p).unwrap().distance + 1, new_bot),
