@@ -1,5 +1,6 @@
 use hashbrown::HashMap;
 use std::collections::VecDeque;
+use itertools::Itertools;
 
 #[derive(Clone)]
 pub struct Computer {
@@ -185,6 +186,25 @@ impl Computer {
             true => self.memory[address],
             false => *self.extra_memory.entry(address).or_insert(0),
         }
+    }
+
+    pub fn output_char(&mut self) -> Option<char> {
+        if let Some(i) = self.get_output() {
+            return Some(char::from(i as u8));
+        } else {
+            return None;
+        }
+    }
+
+    pub fn output_string(&mut self) -> String {
+        self.dump_outputs()
+            .iter()
+            .map(|&c| char::from(c as u8))
+            .fold(String::new(), |out, c| format!("{}{}", out, c))
+    }
+
+    pub fn input_string(&mut self, input: &str){
+        self.add_inputs(input.as_bytes().iter().map(|&a| a as i64).collect_vec());
     }
 }
 
