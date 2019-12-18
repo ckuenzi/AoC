@@ -1,20 +1,91 @@
-use core::fmt::Alignment::Left;
 use hashbrown::HashMap;
 use itertools::Itertools;
 
 #[aoc(day18, part1)]
-fn part1(input: &str) -> i32 {
+fn part1(input: &str) -> u32 {
+    let mut map = construct_map(input);
+    let start = *map.iter().find(|a| a.1.tile == '@').unwrap().0;
+    let mut kk_paths = HashMap::<char, HashMap<char, Path>>::new();
+    let mut keys = vec![('@', start)];
+    for (k, v) in map.iter() {
+        if v.tile.is_lowercase() {
+            keys.push((v.tile, k.clone()));
+        }
+    }
+
+    for key in keys.iter() {
+        kk_paths.insert(key.0, to_key_paths(key.1, &mut map));
+    }
+    let to_visit = keys.iter().map(|k| k.0).collect_vec();
+    let mut known_routes = HashMap::<(char, Vec<char>), u32>::new();
+
+    find_shortest_route(
+        '@',
+        &kk_paths,
+        Vec::<char>::new(),
+        to_visit,
+        &mut known_routes,
+    )
+}
+
+#[aoc(day18, part2)]
+fn part2(input: &str) -> u32 {
+    let mut map = construct_map(input);
+    let start = *map.iter().find(|a| a.1.tile == '@').unwrap().0;
+    for dir in [(-1, -1), (-1, 1), (1, -1), (1, 1)].iter() {
+        let pn = Pos::new(start.x + dir.0, start.y + dir.1);
+        map.get_mut(&pn).unwrap().tile = '@'
+    }
+    for dir in [(-1, 0), (0, 1), (1, 0), (0, -1), (0, 0)].iter() {
+        let pn = Pos::new(start.x + dir.0, start.y + dir.1);
+        map.get_mut(&pn).unwrap().tile = '#'
+    }
+
     let lines = input.lines().map(|l| l.chars().collect_vec()).collect_vec();
     let height = lines.len() as i32;
     let width = lines[0].len() as i32;
-    let mut start = Pos::new(width / 2, height / 2);
+    let mut sub_maps = Vec::<String>::new();
+    for area in [
+        (0, width / 2, 0, height / 2),
+        (width / 2, width, 0, height / 2),
+        (0, width / 2, height / 2, height),
+        (width / 2, width, height / 2, height),
+    ]
+    .iter()
+    {
+        let mut new_map = String::new();
+        for y in area.0..area.1 {
+            for x in area.2..area.3 {
+                new_map.push(map.get(&Pos::new(x, y)).unwrap().tile);
+            }
+            new_map.push('\n');
+        }
+        sub_maps.push(new_map);
+    }
+
+    let mut new_maps = vec![];
+    for map in sub_maps {
+        let keys = map.chars().filter(|c| c.is_lowercase()).collect_vec();
+        let mut repl_map = map.clone();
+        for c in map.chars() {
+            if c.is_uppercase() && keys.iter().find(|&&k| k.to_ascii_uppercase() == c) == None {
+                repl_map = repl_map.replace(c, ".");
+            }
+        }
+        new_maps.push(repl_map);
+    }
+
+    new_maps.iter().map(|m| part1(m.as_str())).sum::<u32>()
+}
+
+fn construct_map(input: &str) -> HashMap<Pos, Node> {
+    let lines = input.lines().map(|l| l.chars().collect_vec()).collect_vec();
+    let height = lines.len() as i32;
+    let width = lines[0].len() as i32;
     let mut map = HashMap::<Pos, Node>::new();
     for y in 0_i32..height {
         for x in 0_i32..width {
             let pos = Pos::new(x, y);
-            if lines[y as usize][x as usize] == '@' {
-                start = pos.clone();
-            }
             map.insert(pos.clone(), Node::new(lines[y as usize][x as usize]));
             for dir in [(0, 1), (0, -1), (1, 0), (-1, 0)].iter() {
                 let pn = Pos::new(x + dir.0, y + dir.1);
@@ -29,32 +100,7 @@ fn part1(input: &str) -> i32 {
             }
         }
     }
-
-    let mut kk_paths = HashMap::<char, HashMap<char, Path>>::new();
-    let mut keys = vec![('@', start)];
-    for (k, v) in map.iter() {
-        if v.tile.is_lowercase() {
-            keys.push((v.tile, k.clone()));
-        }
-    }
-
-    for key in keys.iter() {
-        kk_paths.insert(key.0, to_key_paths(key.1, &mut map));
-    }
-    let to_visit = keys.iter().map(|k| k.0).collect_vec();
-    let mut known_routes = HashMap::<(char, Vec<char>), u32>::new();
-    println!(
-        "{:?}",
-        find_shortest_route(
-            '@',
-            &kk_paths,
-            Vec::<char>::new(),
-            to_visit,
-            &mut known_routes
-        )
-    );
-    //println!("{:?}", known_routes);
-    0
+    map
 }
 
 fn find_shortest_route(
@@ -64,13 +110,13 @@ fn find_shortest_route(
     mut to_visit: Vec<char>,
     known_routes: &mut HashMap<(char, Vec<char>), u32>,
 ) -> u32 {
-    //println!("func start: {}, keys: {:?}, to_visit{:?}", start, keys, to_visit);
     to_visit = to_visit
         .iter()
         .filter(|k| **k != start)
         .map(|k| *k)
         .collect_vec();
     keys.push(start);
+
     if known_routes.get(&(start, to_visit.to_vec())) != None {
         return *known_routes.get(&(start, to_visit)).unwrap();
     }
@@ -80,10 +126,7 @@ fn find_shortest_route(
     }
 
     let visible_keys = get_visible_keys(start, kk_paths, &keys);
-
-    let mut shortest = 9999999;
-    let mut selected_key = '.';
-
+    let mut shortest = std::u32::MAX;
     for target_key in to_visit.iter() {
         if visible_keys.iter().find(|&&k| k == *target_key) == None {
             continue;
@@ -105,7 +148,6 @@ fn find_shortest_route(
         let total_distance = target_shortest + distance;
         if total_distance < shortest {
             shortest = total_distance;
-            selected_key = *target_key;
         }
     }
     if to_visit.len() < 23 {
@@ -214,8 +256,9 @@ impl Pos {
 
 #[test]
 fn test_part1() {
-    part1(
-        "#################
+    assert_eq!(
+        part1(
+            "#################
 #i.G..c...e..H.p#
 ########.########
 #j.A..b...f..D.o#
@@ -224,5 +267,23 @@ fn test_part1() {
 ########.########
 #l.F..d...h..C.m#
 #################",
+        ),
+        136
+    );
+}
+
+#[test]
+fn test_part2() {
+    assert_eq!(
+        part2(
+            "#######
+#a.#Cd#
+##...##
+##.@.##
+##...##
+#cB#Ab#
+#######",
+        ),
+        8
     );
 }
