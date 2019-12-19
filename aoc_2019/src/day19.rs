@@ -14,7 +14,7 @@ fn part1(input: &str) -> i64 {
 #[aoc(day19, part2)]
 fn part2(input: &str) -> i64 {
     let mut computer = Computer::new_from_text(input);
-    let (mut x, mut y) = (3, 3);
+    let (mut x, mut y) = (0,0);
     while !(y > 100 && check_beam(x + 99, y - 99, &mut computer)) {
         y += 1;
         x += [2, 1][check_beam(x + 1, y, &mut computer) as usize];
