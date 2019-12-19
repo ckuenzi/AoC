@@ -17,12 +17,8 @@ fn part2(input: &str) -> i64 {
     let (mut x, mut y) = (3, 3);
     while !(y > 100 && check_beam(x + 99, y - 99, &mut computer)) {
         y += 1;
-        while {
-            x += 1;
-            !check_beam(x, y, &mut computer)
-        } {}
+        x += [2, 1][check_beam(x + 1, y, &mut computer) as usize];
     }
-
     x * 10000 + (y - 99)
 }
 
