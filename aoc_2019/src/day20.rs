@@ -112,15 +112,20 @@ fn part2(map: &HashMap<Pos, Node>) -> u32 {
             .collect_vec();
     }
 
+    let portal_count = map.values().unique_by(|n| n.portal.as_str()).count();
+
     let start = map.iter().filter(|(_, v)| v.start).next().unwrap().0;
     let mut to_visit = vec![(*start, 0)];
     let mut max_level = 0;
-    let mut level = 0;
     let result = loop {
         if to_visit.is_empty() {
             return std::u32::MAX;
         }
         let (pos, level) = to_visit.remove(0);
+
+        if level > portal_count{
+            continue;
+        }
 
         if map.get(&pos).unwrap().end {
             if level == 0 {
@@ -151,7 +156,6 @@ fn part2(map: &HashMap<Pos, Node>) -> u32 {
                     node.visited_level.push(false);
                 }
                 max_level = next_level;
-                println!("{}", level);
             }
 
             map.get_mut(&other_end).unwrap().visited_level[next_level] = true;
@@ -172,7 +176,6 @@ fn part1(map: &HashMap<Pos, Node>) -> u32 {
     let result = loop {
         let pos = to_visit.remove(0);
         if map.get(&pos).unwrap().end {
-            println!("found end at distance {}", map.get(&pos).unwrap().distance);
             break map.get(&pos).unwrap().distance;
         }
 
