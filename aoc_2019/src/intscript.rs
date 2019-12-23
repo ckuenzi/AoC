@@ -10,7 +10,7 @@ pub struct Computer {
     original_memory: Vec<i64>,
     ip: usize,
     relative_base: i64,
-    input: VecDeque<i64>,
+    pub input: VecDeque<i64>,
     output: VecDeque<i64>,
     pub halted: bool,
     waiting_for_input: bool,
