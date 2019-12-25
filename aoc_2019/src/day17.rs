@@ -1,6 +1,5 @@
 use super::intscript::Computer;
 use hashbrown::HashMap;
-use itertools::Itertools;
 use std::fmt;
 
 #[aoc(day17, part1)]
@@ -25,29 +24,9 @@ fn part1(input: &str) -> i32 {
 }
 
 #[aoc(day17, part2)]
-fn part2(input: &str) -> i32 {
-    /*let mut sequence = get_sequence(input);
-    println!("{:?}", sequence);
-    for offset in 1..sequence.len() {
-        let mut count = 0;
-        for i in 0..sequence.len() - offset {
-            //println!("{} - {} -> {}", sequence[i], sequence[i+offset] , sequence[i].eq(&sequence[i + offset]));
-            if sequence[i].eq(&sequence[i + offset]) {
-                count += 1;
-            } else {
-                if count > 3 {
-                    for j in (i-count)..i{
-                        print!("{:?}", sequence[j]);
-                    }
-                    println!();
-                }
-                count = 0;
-            }
-            println!("{}", count);
-        }
-    }*/
-
+fn part2(input: &str) -> i64 {
     let mut computer = Computer::new_from_text(input);
+    get_sequence(input);
     computer.write(0, 2).run();
     computer.input_string("B,C,C,B,C,A,B,A,C,A\n"); //sequence
     computer.input_string("R,12,L,6,L,6,L,8\n"); //A
@@ -55,13 +34,8 @@ fn part2(input: &str) -> i32 {
     computer.input_string("L,8,R,12,L,12\n"); //C
     computer.input_string("n\n"); //feed?
     computer.run();
-    //println!("{}", computer.output_string());
     let out = computer.get_outputs();
-    println!("{}", out[out.len()-1]);
-
-    //println!("{:?}", sequence);
-
-    0
+    out[out.len() - 1]
 }
 
 fn get_sequence(input: &str) -> Vec<String> {
@@ -71,7 +45,7 @@ fn get_sequence(input: &str) -> Vec<String> {
     let mut sequence = vec![];
     loop {
         if let Some(turn) = turn(&map, &pos, &mut dir) {
-           //sequence = format!("{}{:?},", sequence, turn);
+            //sequence = format!("{}{:?},", sequence, turn);
             let steps = walk(&mut map, &mut pos, &dir);
             sequence.push(format!("{:?},{:?}", turn, steps));
         } else {
@@ -79,7 +53,6 @@ fn get_sequence(input: &str) -> Vec<String> {
         }
 
         //sequence = format!("{}{},", sequence, steps);
-
     }
     //print_map(&map);
     sequence
